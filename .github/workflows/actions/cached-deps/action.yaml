@@ -1,13 +1,27 @@
-name: 'Get and Cache Dependencies'
-description: 'Get the dependencies and cached them via npm'
+name: 'Get & Cached Dependencies'
+description: 'GEt the dependencies and cahce them'
+inputs:
+  caching:
+    description: ' Whether to cache dependency or not'
+    required: false
+    default: 'true'
+outputs:
+  used-cache:
+    description: ' Whether the cache was used'
+    value: ${{ steps.install.outputs.cache }}
 runs:
   using: 'composite'
   steps:
     - name: Cache dependencies
+      if: inputs.caching == 'true'
+      id: cache
       uses: actions/cache@v3
       with:
         path: ~/.npm
         key: ${{ env.CACHE_KEY }}-${{ hashFiles('**/package-lock.json') }}
     - name: Install dependencies
-      run: npm ci
+      id: install
+      run: |
+        npm ci
+        echo "::set-output name=cache::'${{ inputs.caching }}'"
       shell: bash
